@@ -1,28 +1,43 @@
 import axios from "axios";
 import Head from "next/head";
 import Image from "next/image";
-import { useEffect } from "react";
-import Footer from "../components/Footer";
-import Navbar from "../components/Navbar";
+import { useState } from "react";
+import Add from "../components/Add";
+import AddButton from "../components/AddButton";
+import Featured from "../components/Featured";
+import PizzaList from "../components/PizzaList";
 import styles from "../styles/Home.module.css";
-import styled from "styled-components";
 
-export default function Home(pizzaList) {
+export default function Home({ pizzaList, admin }) {
+  const [close, setClose] = useState(true);
   return (
-    <Container>
-      <Navbar />
-      <Footer />
-    </Container>
+    <div className={styles.container}>
+      <Head>
+        <title>Pizza Restaurant in Newyork</title>
+        <meta name="description" content="Best pizza shop in town" />
+        <link rel="icon" href="/favicon.ico" />
+      </Head>
+      <Featured />
+      {<AddButton setClose={setClose} />}
+      <PizzaList pizzaList={pizzaList} />
+      {!close && <Add setClose={setClose} />}
+    </div>
   );
 }
 
-const Container = styled.div``;
+export const getServerSideProps = async (ctx) => {
+  const myCookie = ctx.req?.cookies || "";
+  let admin = false;
 
-export const getServerSideProps = async () => {
+  if (myCookie.token === process.env.TOKEN) {
+    admin = true;
+  }
+
   const res = await axios.get("http://localhost:3000/api/products");
   return {
     props: {
       pizzaList: res.data,
+      admin,
     },
   };
 };
